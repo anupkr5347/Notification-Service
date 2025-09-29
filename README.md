@@ -16,7 +16,7 @@ A high-performance **Notification Service** built with **Java Spring Boot** that
 
 ## **Technologies Used**
 
-- **Java 17+ / Spring Boot 3.x** – Framework for building microservices.  
+- **Java 21 / Spring Boot 3.x** – Framework for building microservices.  
 - **Apache Kafka** – Message broker for asynchronous communication.  
 - **STOMP over WebSocket** – Real-time client notifications.  
 - **Redis** – In-memory data store for caching and session management.  
