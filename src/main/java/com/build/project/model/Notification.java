@@ -1,12 +1,14 @@
 package com.build.project.model;
 
-import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
+
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import org.hibernate.annotations.Type;
+
 
 import java.time.Instant;
 import java.util.Map;
@@ -28,8 +30,9 @@ public class Notification {
     @Column(columnDefinition = "text")
     private String body;
 
-    @Column(columnDefinition = "text")
-    private String payload;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> context;
 
     private String status;
 

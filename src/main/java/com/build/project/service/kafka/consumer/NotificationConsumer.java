@@ -1,5 +1,6 @@
 package com.build.project.service.kafka.consumer;
 
+import com.build.project.constant.NotificationConstant;
 import com.build.project.model.Notification;
 import com.build.project.repository.NotificationRepository;
 import com.build.project.service.PresenceService;
@@ -29,22 +30,19 @@ public class NotificationConsumer {
                 // broadcast
                 messagingTemplate.convertAndSend("/topic/notifications", notification);
             } else {
-                // if recipient is online (checked via Redis), deliver to user queue, else mark for fallback
                 String sessionId = presenceService.getSessionForUser(notification.getRecipientId());
-                if (sessionId != null) {
-                    // send to user-specific destination
-                    messagingTemplate.convertAndSendToUser(notification.getRecipientId(), "/queue/notifications", notification);
-                    notification.setStatus("SENT");
-                    notification.setDeliveredAt(Instant.now());
-                } else {
-                    notification.setStatus("PENDING"); // still pending, will later fallback
+                if (sessionId == null) {
+                    sessionId = presenceService.createSessionForUser(notification.getRecipientId());
                 }
+                messagingTemplate.convertAndSendToUser(notification.getRecipientId(), "/queue/notifications", notification);
+                notification.setStatus(NotificationConstant.SENT);
+                notification.setDeliveredAt(Instant.now());
             }
             repo.save(notification);
         } catch (Exception ex) {
             // increment attempts, possibly send to DLQ
             notification.setAttempts(notification.getAttempts() + 1);
-            notification.setStatus("FAILED");
+            notification.setStatus(NotificationConstant.FAILED);
             repo.save(notification);
             // Ideally publish to DLQ or handle retries via Kafka retry logic
         }
